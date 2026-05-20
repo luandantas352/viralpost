@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralPost — Editor de Carrosséis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;700;800;900&family=Bebas+Neue&family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #08080f;
+            --bg-panel: #0f0f1a;
+            --bg-input: #161625;
+            --border: rgba(139, 92, 246, 0.12);
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f97316;
+            --text: #f1f5f9;
+            --text-muted: #64748b;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.5rem;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .editor-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .editor-header .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editor-header .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .btn-sm:hover { transform: translateY(-1px); }
+
+        .btn-ai {
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            color: #fff;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, var(--orange), #ef4444);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* LAYOUT */
+        .editor-layout {
+            display: flex;
+            height: calc(100vh - 52px);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+
+        .panel-section h3 {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* TEMPLATES */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .template-thumb {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.3rem;
+        }
+
+        .template-thumb:hover { transform: scale(1.05); }
+        .template-thumb.active { border-color: var(--purple); }
+
+        .template-thumb.dark-bold {
+            background: #0a0a0a;
+            color: #facc15;
+        }
+
+        .template-thumb.gradient-neon {
+            background: linear-gradient(135deg, #1e1b4b, #4c1d95);
+            color: #f472b6;
+        }
+
+        .template-thumb.clean-minimal {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* INPUTS */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .field-group input[type="text"],
+        .field-group textarea,
+        .field-group select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group textarea:focus,
+        .field-group select:focus {
+            border-color: var(--purple);
+        }
+
+        .field-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .color-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .color-picker-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .color-picker-wrap span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        input[type="color"] {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
+
+        .upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem;
+            background: var(--bg-input);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .upload-btn:hover { border-color: var(--purple); color: var(--text); }
+
+        /* CANVAS AREA */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            gap: 1.5rem;
+            background: #050508;
+        }
+
+        .canvas-wrapper {
+            width: 420px;
+            height: 420px;
+            position: relative;
+        }
+
+        .slide-canvas {
+            width: 1080px;
+            height: 1080px;
+            transform: scale(0.389);
+            transform-origin: top left;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 80px;
+        }
+
+        .slide-canvas .bg-image {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .slide-canvas .overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+        }
+
+        .slide-canvas .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .slide-canvas .handle-text {
+            font-size: 28px;
+            font-weight: 600;
+            opacity: 0.6;
+            position: absolute;
+            top: 60px;
+            left: 80px;
+            z-index: 3;
+        }
+
+        .slide-canvas .slide-number-display {
+            font-size: 120px;
+            font-weight: 900;
+            opacity: 0.06;
+            position: absolute;
+            top: 40px;
+            right: 80px;
+            z-index: 1;
+        }
+
+        .slide-canvas .headline-text {
+            font-size: 68px;
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: -1px;
+        }
+
+        .slide-canvas .headline-text .highlight {
+            color: inherit;
+        }
+
+        .slide-canvas .subtitle-text {
+            font-size: 32px;
+            font-weight: 400;
+            line-height: 1.5;
+            opacity: 0.75;
+        }
+
+        .slide-canvas .slide-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .slide-canvas .slide-indicator .bar {
+            height: 4px;
+            border-radius: 2px;
+            flex: 1;
+        }
+
+        .slide-canvas .cta-icons {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+            font-size: 28px;
+            opacity: 0.8;
+        }
+
+        /* SLIDE NAV */
+        .slide-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slide-nav button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .slide-nav button:hover { background: var(--purple); }
+
+        .slide-nav span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .slides-dots {
+            display: flex;
+            gap: 6px;
+            margin-top: 0.5rem;
+        }
+
+        .slides-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .slides-dots .dot.active {
+            background: var(--purple);
+            border-color: var(--purple);
+        }
+
+        /* AI MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 450px;
+        }
+
+        .modal h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 900px) {
+            .editor-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; max-height: 40vh; }
+            .canvas-wrapper { width: 300px; height: 300px; }
+            .slide-canvas { transform: scale(0.278); }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="editor-header">
+        <div class="logo">
+            <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <span>ViralPost Editor</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-sm btn-ai" onclick="openAiModal()">Gerar com IA</button>
+            <button class="btn-sm btn-export" onclick="exportAll()">Baixar Todos</button>
+            <a href="/" class="btn-sm btn-ghost" style="text-decoration:none">Voltar</a>
+        </div>
+    </header>
+
+    <!-- LAYOUT -->
+    <div class="editor-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <!-- TEMPLATES -->
+            <div class="panel-section">
+                <h3>Templates</h3>
+                <div class="templates-grid">
+                    <div class="template-thumb dark-bold active" onclick="applyTemplate('dark-bold')">Dark<br>Bold</div>
+                    <div class="template-thumb gradient-neon" onclick="applyTemplate('gradient-neon')">Gradient<br>Neon</div>
+                    <div class="template-thumb clean-minimal" onclick="applyTemplate('clean-minimal')">Clean<br>Minimal</div>
+                </div>
+            </div>
+
+            <!-- TEXTOS -->
+            <div class="panel-section">
+                <h3>Textos</h3>
+                <div class="field-group">
+                    <label>Handle / @username</label>
+                    <input type="text" id="inputHandle" value="@seuuser" oninput="updateSlide()">
+                </div>
+                <div class="field-group">
+                    <label>Headline</label>
+                    <textarea id="inputHeadline" oninput="updateSlide()">Seu texto de impacto aqui</textarea>
+                </div>
+                <div class="field-group">
+                    <label>Palavra em destaque</label>
+                    <input type="text" id="inputHighlight" value="impacto" oninput="updateSlide()">
+                </div>
+                <div class="field-group">
+                    <label>Subtítulo</label>
+                    <input type="text" id="inputSubtitle" value="Texto complementar do slide" oninput="updateSlide()">
+                </div>
+            </div>
+
+            <!-- CORES -->
+            <div class="panel-section">
+                <h3>Cores</h3>
+                <div class="color-row">
+                    <div class="color-picker-wrap">
+                        <input type="color" id="colorBg" value="#0a0a0a" onchange="updateSlide()">
+                        <span>Fundo</span>
+                    </div>
+                    <div class="color-picker-wrap">
+                        <input type="color" id="colorText" value="#ffffff" onchange="updateSlide()">
+                        <span>Texto</span>
+                    </div>
+                    <div class="color-picker-wrap">
+                        <input type="color" id="colorHighlight" value="#facc15" onchange="updateSlide()">
+                        <span>Destaque</span>
+                    </div>
+                    <div class="color-picker-wrap">
+                        <input type="color" id="colorSubtitle" value="#94a3b8" onchange="updateSlide()">
+                        <span>Subtítulo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FONTE -->
+            <div class="panel-section">
+                <h3>Fonte</h3>
+                <div class="field-group">
+                    <label>Família</label>
+                    <select id="fontFamily" onchange="updateSlide()">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+                        <option value="'Poppins', sans-serif">Poppins</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Tamanho headline (px)</label>
+                    <input type="text" id="fontSize" value="72" oninput="updateSlide()">
+                </div>
+            </div>
+
+            <!-- IMAGEM -->
+            <div class="panel-section">
+                <h3>Imagem de fundo</h3>
+                <label class="upload-btn" for="imageUpload">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    Upload de foto
+                </label>
+                <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+                <button class="btn-sm btn-ghost" style="margin-top:0.5rem;width:100%" onclick="removeImage()">Remover imagem</button>
+            </div>
+
+            <!-- SLIDES -->
+            <div class="panel-section">
+                <h3>Slides</h3>
+                <div style="display:flex;gap:0.5rem">
+                    <button class="btn-sm btn-ghost" style="flex:1" onclick="addSlide()">+ Adicionar</button>
+                    <button class="btn-sm btn-ghost" style="flex:1" onclick="removeSlide()">- Remover</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CANVAS -->
+        <main class="canvas-area">
+            <div class="canvas-wrapper">
+                <div class="slide-canvas" id="slideCanvas">
+                    <img class="bg-image" id="bgImage" src="" alt="" style="display:none">
+                    <div class="overlay" id="canvasOverlay"></div>
+                    <div class="content">
+                        <div class="handle-text" id="canvasHandle">@seuuser</div>
+                        <div class="headline-text" id="canvasHeadline">Seu texto de <span class="highlight">impacto</span> aqui</div>
+                        <div class="subtitle-text" id="canvasSubtitle">Texto complementar do slide</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-nav">
+                <button onclick="prevSlide()">&#8249;</button>
+                <span id="slideCounter">1 / 7</span>
+                <button onclick="nextSlide()">&#8250;</button>
+            </div>
+            <div class="slides-dots" id="slidesDots"></div>
+        </main>
+    </div>
+
+    <!-- AI MODAL -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal">
+            <h2>Gerar carrossel com IA</h2>
+            <input type="text" id="aiTopic" placeholder="Ex: 5 erros que impedem seu perfil de crescer">
+            <div class="modal-actions">
+                <button class="btn-sm btn-ghost" onclick="closeAiModal()">Cancelar</button>
+                <button class="btn-sm btn-ai" id="aiGenerateBtn" onclick="generateWithAI()">Gerar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const TEMPLATES = {
+        'dark-bold': {
+            bg: '#0a0a0a',
+            text: '#ffffff',
+            highlight: '#facc15',
+            subtitle: '#94a3b8',
+            overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%)',
+            font: "'Inter', sans-serif"
+        },
+        'gradient-neon': {
+            bg: 'linear-gradient(135deg, #1e1b4b, #4c1d95, #2e1065)',
+            text: '#ffffff',
+            highlight: '#f472b6',
+            subtitle: '#c4b5fd',
+            overlay: '',
+            font: "'Montserrat', sans-serif"
+        },
+        'clean-minimal': {
+            bg: '#f8fafc',
+            text: '#0f172a',
+            highlight: '#7c3aed',
+            subtitle: '#475569',
+            overlay: '',
+            font: "'Poppins', sans-serif"
+        }
+    };
+
+    let slides = [];
+    let currentSlide = 0;
+    let currentTemplate = 'dark-bold';
+
+    function initSlides() {
+        slides = Array.from({ length: 7 }, (_, i) => ({
+            handle: '@seuuser',
+            headline: i === 0 ? 'Seu texto de impacto aqui' : `Slide ${i + 1} headline`,
+            highlightWord: i === 0 ? 'impacto' : 'headline',
+            subtitle: i === 0 ? 'Texto complementar do slide' : `Conteúdo do slide ${i + 1}`,
+            bgColor: TEMPLATES[currentTemplate].bg,
+            textColor: TEMPLATES[currentTemplate].text,
+            highlightColor: TEMPLATES[currentTemplate].highlight,
+            subtitleColor: TEMPLATES[currentTemplate].subtitle,
+            font: TEMPLATES[currentTemplate].font,
+            fontSize: 72,
+            image: null
+        }));
+        renderDots();
+        loadSlide(0);
+    }
+
+    function loadSlide(index) {
+        currentSlide = index;
+        const s = slides[index];
+        document.getElementById('inputHandle').value = s.handle;
+        document.getElementById('inputHeadline').value = s.headline;
+        document.getElementById('inputHighlight').value = s.highlightWord;
+        document.getElementById('inputSubtitle').value = s.subtitle;
+        document.getElementById('colorBg').value = s.bgColor.startsWith('#') ? s.bgColor : '#0a0a0a';
+        document.getElementById('colorText').value = s.textColor;
+        document.getElementById('colorHighlight').value = s.highlightColor;
+        document.getElementById('colorSubtitle').value = s.subtitleColor;
+        document.getElementById('fontFamily').value = s.font;
+        document.getElementById('fontSize').value = s.fontSize;
+        document.getElementById('slideCounter').textContent = `${index + 1} / ${slides.length}`;
+        renderCanvas();
+        renderDots();
+    }
+
+    function saveCurrentSlide() {
+        const s = slides[currentSlide];
+        s.handle = document.getElementById('inputHandle').value;
+        s.headline = document.getElementById('inputHeadline').value;
+        s.highlightWord = document.getElementById('inputHighlight').value;
+        s.subtitle = document.getElementById('inputSubtitle').value;
+        s.textColor = document.getElementById('colorText').value;
+        s.highlightColor = document.getElementById('colorHighlight').value;
+        s.subtitleColor = document.getElementById('colorSubtitle').value;
+        s.font = document.getElementById('fontFamily').value;
+        s.fontSize = parseInt(document.getElementById('fontSize').value) || 72;
+
+        const bgVal = document.getElementById('colorBg').value;
+        if (currentTemplate === 'gradient-neon') {
+            s.bgColor = TEMPLATES['gradient-neon'].bg;
+        } else {
+            s.bgColor = bgVal;
+        }
+    }
+
+    function updateSlide() {
+        saveCurrentSlide();
+        renderCanvas();
+    }
+
+    function renderCanvas() {
+        const s = slides[currentSlide];
+        const canvas = document.getElementById('slideCanvas');
+        const bgImage = document.getElementById('bgImage');
+        const overlay = document.getElementById('canvasOverlay');
+
+        if (s.bgColor.startsWith('linear')) {
+            canvas.style.background = s.bgColor;
+        } else {
+            canvas.style.background = s.bgColor;
+        }
+
+        canvas.style.fontFamily = s.font;
+
+        if (s.image) {
+            bgImage.src = s.image;
+            bgImage.style.display = 'block';
+            overlay.style.background = TEMPLATES[currentTemplate].overlay || 'linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.7))';
+        } else {
+            bgImage.style.display = 'none';
+            overlay.style.background = '';
+        }
+
+        document.getElementById('canvasHandle').textContent = s.handle;
+        document.getElementById('canvasHandle').style.color = s.textColor;
+
+        const headlineEl = document.getElementById('canvasHeadline');
+        headlineEl.style.color = s.textColor;
+        headlineEl.style.fontSize = s.fontSize + 'px';
+
+        if (s.highlightWord && s.headline.toLowerCase().includes(s.highlightWord.toLowerCase())) {
+            const regex = new RegExp(`(${s.highlightWord})`, 'gi');
+            headlineEl.innerHTML = s.headline.replace(regex, `<span class="highlight" style="color:${s.highlightColor}">$1</span>`);
+        } else {
+            headlineEl.textContent = s.headline;
+        }
+
+        const subtitleEl = document.getElementById('canvasSubtitle');
+        subtitleEl.textContent = s.subtitle;
+        subtitleEl.style.color = s.subtitleColor;
+    }
+
+    function renderDots() {
+        const container = document.getElementById('slidesDots');
+        container.innerHTML = '';
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === currentSlide ? ' active' : '');
+            dot.onclick = () => loadSlide(i);
+            container.appendChild(dot);
+        });
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) loadSlide(currentSlide - 1);
+    }
+
+    function nextSlide() {
+        if (currentSlide < slides.length - 1) loadSlide(currentSlide + 1);
+    }
+
+    function addSlide() {
+        const tpl = TEMPLATES[currentTemplate];
+        slides.push({
+            handle: slides[0].handle,
+            headline: `Novo slide ${slides.length + 1}`,
+            highlightWord: 'slide',
+            subtitle: 'Edite este slide',
+            bgColor: tpl.bg,
+            textColor: tpl.text,
+            highlightColor: tpl.highlight,
+            subtitleColor: tpl.subtitle,
+            font: tpl.font,
+            fontSize: 72,
+            image: slides[currentSlide].image
+        });
+        loadSlide(slides.length - 1);
+    }
+
+    function removeSlide() {
+        if (slides.length <= 1) return;
+        slides.splice(currentSlide, 1);
+        if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+        loadSlide(currentSlide);
+    }
+
+    function applyTemplate(name) {
+        currentTemplate = name;
+        const tpl = TEMPLATES[name];
+
+        document.querySelectorAll('.template-thumb').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.template-thumb.${name}`).classList.add('active');
+
+        slides.forEach(s => {
+            s.bgColor = tpl.bg;
+            s.textColor = tpl.text;
+            s.highlightColor = tpl.highlight;
+            s.subtitleColor = tpl.subtitle;
+            s.font = tpl.font;
+        });
+
+        document.getElementById('colorBg').value = tpl.bg.startsWith('#') ? tpl.bg : '#0a0a0a';
+        document.getElementById('colorText').value = tpl.text;
+        document.getElementById('colorHighlight').value = tpl.highlight;
+        document.getElementById('colorSubtitle').value = tpl.subtitle;
+        document.getElementById('fontFamily').value = tpl.font;
+
+        renderCanvas();
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            slides[currentSlide].image = e.target.result;
+            renderCanvas();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        slides[currentSlide].image = null;
+        document.getElementById('imageUpload').value = '';
+        renderCanvas();
+    }
+
+    function openAiModal() {
+        document.getElementById('aiModal').classList.add('active');
+        document.getElementById('aiTopic').focus();
+    }
+
+    function closeAiModal() {
+        document.getElementById('aiModal').classList.remove('active');
+    }
+
+    async function generateWithAI() {
+        const topic = document.getElementById('aiTopic').value.trim();
+        if (!topic) return;
+
+        const btn = document.getElementById('aiGenerateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Gerando...';
+
+        try {
+            const res = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, slides: slides.length })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            const tpl = TEMPLATES[currentTemplate];
+            data.slides.forEach((aiSlide, i) => {
+                if (i < slides.length) {
+                    slides[i].headline = aiSlide.headline;
+                    slides[i].subtitle = aiSlide.body || '';
+                    const words = aiSlide.headline.split(' ');
+                    slides[i].highlightWord = words.length > 2 ? words[Math.floor(words.length / 2)] : words[0];
+                }
+            });
+
+            closeAiModal();
+            loadSlide(0);
+        } catch (err) {
+            alert('Erro: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Gerar';
+        }
+    }
+
+    async function exportAll() {
+        const canvas = document.getElementById('slideCanvas');
+        const original = currentSlide;
+
+        for (let i = 0; i < slides.length; i++) {
+            loadSlide(i);
+            await new Promise(r => setTimeout(r, 100));
+
+            try {
+                const result = await html2canvas(canvas, {
+                    width: 1080,
+                    height: 1080,
+                    scale: 1,
+                    useCORS: true,
+                    backgroundColor: null
+                });
+
+                const link = document.createElement('a');
+                link.download = `viralpost-slide-${i + 1}.png`;
+                link.href = result.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error('Erro ao exportar slide', i + 1, err);
+            }
+        }
+
+        loadSlide(original);
+    }
+
+    document.getElementById('aiTopic').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') generateWithAI();
+    });
+
+    initSlides();
+    </script>
+</body>
+</html>

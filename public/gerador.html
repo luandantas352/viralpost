@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralPost — Gerador de Carrosséis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a12;
+            --bg-card: #111119;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f97316;
+            --gradient-cta: linear-gradient(135deg, #f97316, #ec4899);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            --text: #f1f5f9;
+            --text-muted: #7a8599;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .header .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header .logo-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        /* INPUT SECTION */
+        .input-section {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-section label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-row input:focus {
+            border-color: var(--purple);
+        }
+
+        .input-row input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-generate {
+            padding: 0.9rem 2rem;
+            background: var(--gradient-cta);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            align-items: center;
+        }
+
+        .options-row label {
+            font-size: 0.82rem;
+            margin-bottom: 0;
+            color: var(--text-muted);
+        }
+
+        .options-row select {
+            padding: 0.5rem 0.8rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        /* CAROUSEL PREVIEW */
+        .preview-section {
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .btn-download {
+            padding: 0.6rem 1.4rem;
+            background: var(--gradient-purple);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-1px);
+        }
+
+        .slides-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .slide-card {
+            aspect-ratio: 1;
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-card.cover {
+            background: linear-gradient(135deg, #1a0533, #0f0a2e, #0a1628);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .slide-card.content {
+            background: linear-gradient(135deg, #0f0a2e, #111119);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        .slide-card.cta {
+            background: linear-gradient(135deg, #2d1054, #1a0533);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .slide-card h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--text), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-card p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: #fca5a5;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .input-row { flex-direction: column; }
+            .slides-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <h1>ViralPost — Gerador</h1>
+            <a href="/editor.html" style="margin-left:auto;font-size:0.85rem;color:#8b5cf6;text-decoration:none;font-weight:600">Editor Visual &rarr;</a>
+        </div>
+
+        <div class="input-section">
+            <label>Qual o tema do seu carrossel?</label>
+            <div class="input-row">
+                <input type="text" id="topic" placeholder="Ex: 5 hábitos para crescer no Instagram">
+                <button class="btn-generate" id="generateBtn" onclick="generate()">Gerar Carrossel</button>
+            </div>
+            <div class="options-row">
+                <label>Slides:</label>
+                <select id="slidesCount">
+                    <option value="5">5</option>
+                    <option value="7" selected>7</option>
+                    <option value="10">10</option>
+                </select>
+                <label>Estilo do Conteúdo:</label>
+                <select id="contentStyle">
+                    <option value="tutorial">Tutorial / Passo a Passo</option>
+                    <option value="storytelling">Storytelling</option>
+                    <option value="objection">Quebra de Objeção / Venda</option>
+                    <option value="list">Lista / Curadoria</option>
+                    <option value="controversial">Polêmico / Contra-intuitivo</option>
+                </select>
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Gerando seu carrossel viral com IA...</p>
+        </div>
+
+        <div class="preview-section" id="preview">
+            <div class="preview-header">
+                <h2 id="carouselTitle">Seu Carrossel</h2>
+                <button class="btn-download" onclick="downloadAll()">Baixar Imagens</button>
+            </div>
+            <div class="slides-grid" id="slidesGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        async function generate() {
+            const topic = document.getElementById('topic').value.trim();
+            const slides = document.getElementById('slidesCount').value;
+            const style = document.getElementById('contentStyle').value;
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const preview = document.getElementById('preview');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!topic) {
+                errorMsg.textContent = 'Digite o tema do carrossel.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            errorMsg.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Gerando...';
+            loading.classList.add('active');
+            preview.classList.remove('active');
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, slides: parseInt(slides), style })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Erro ao gerar carrossel.');
+                }
+
+                renderSlides(data);
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Gerar Carrossel';
+                loading.classList.remove('active');
+            }
+        }
+
+        function renderSlides(data) {
+            const grid = document.getElementById('slidesGrid');
+            const preview = document.getElementById('preview');
+            const title = document.getElementById('carouselTitle');
+
+            title.textContent = data.title || 'Seu Carrossel';
+            grid.innerHTML = '';
+
+            data.slides.forEach((slide, i) => {
+                const isFirst = i === 0;
+                const isLast = i === data.slides.length - 1;
+                const type = isFirst ? 'cover' : isLast ? 'cta' : 'content';
+
+                const card = document.createElement('div');
+                card.className = `slide-card ${type}`;
+                card.innerHTML = `
+                    <span class="slide-number">${i + 1}/${data.slides.length}</span>
+                    <h3>${slide.headline}</h3>
+                    ${slide.body ? `<p>${slide.body}</p>` : ''}
+                `;
+                grid.appendChild(card);
+            });
+
+            preview.classList.add('active');
+        }
+
+        function downloadAll() {
+            alert('Para baixar as imagens, use Print Screen em cada slide ou integre com html2canvas. Funcionalidade completa em breve!');
+        }
+
+        document.getElementById('topic').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') generate();
+        });
+    </script>
+</body>
+</html>

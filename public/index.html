@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralPost — Gere Carrosséis Virais com IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a12;
+            --bg-card: #111119;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f97316;
+            --red: #ef4444;
+            --gradient-hot: linear-gradient(135deg, #f97316, #ef4444);
+            --gradient-cta: linear-gradient(135deg, #f97316, #ec4899);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            --text: #f1f5f9;
+            --text-muted: #7a8599;
+            --radius: 20px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            background: var(--gradient-hot);
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .topbar svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 18, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--gradient-hot);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .menu-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .menu-btn div {
+            width: 22px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+        }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            padding: 3.5rem 1.5rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 8vw, 2.8rem);
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero h1 .grad-text {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .purple-text {
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 420px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-desc strong {
+            color: var(--text);
+        }
+
+        /* CTA BUTTON - Card style */
+        .cta-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 0 1.5rem;
+        }
+
+        .btn-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 380px;
+            padding: 1.2rem 1.5rem;
+            background: var(--gradient-cta);
+            border-radius: 16px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 700;
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 50px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-cta .arrow {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cta .arrow svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .btn-sub {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* VIDEO SECTION */
+        .video-section {
+            padding: 3rem 1.5rem;
+        }
+
+        .video-player {
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            aspect-ratio: 16/9;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        .video-player::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent 70%);
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .play-btn::after {
+            content: '';
+            border-style: solid;
+            border-width: 10px 0 10px 18px;
+            border-color: transparent transparent transparent #fff;
+            margin-left: 3px;
+        }
+
+        .video-label {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* SOCIAL PROOF */
+        .social-proof {
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .social-proof h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        .avatars {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            padding: 3px;
+        }
+
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* BENEFITS */
+        .benefits {
+            padding: 3rem 1.5rem;
+        }
+
+        .benefits-card {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .benefits-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-hot);
+        }
+
+        .benefits-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .benefits-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1.5px solid var(--purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
+            stroke: var(--purple);
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .benefits-cta {
+            margin-top: 2rem;
+        }
+
+        .benefits-cta .btn-cta {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* PLANS */
+        .plans {
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+
+        .plans-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .plans-label .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+        }
+
+        .plans h2 {
+            font-size: clamp(1.6rem, 6vw, 2.2rem);
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .plans h2 .grad-text {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plans .subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-wrapper {
+            display: inline-flex;
+            background: #1a1a28;
+            border-radius: 50px;
+            padding: 4px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .toggle-option {
+            padding: 0.65rem 1.4rem;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .toggle-option.active {
+            background: var(--gradient-cta);
+            color: #fff;
+        }
+
+        .plan-card {
+            max-width: 420px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 2px solid var(--purple);
+            border-radius: var(--radius);
+            padding: 2.5rem 1.5rem 2rem;
+            position: relative;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.15), inset 0 0 30px rgba(139, 92, 246, 0.03);
+        }
+
+        .plan-tag {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-purple);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .plan-price .amount {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--pink), var(--orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plan-price .period {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .plan-old-price {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-bottom: 0.3rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .save-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--purple);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            text-decoration: none;
+        }
+
+        .plan-note {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-plan {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 1.1rem 1.5rem;
+            background: var(--gradient-cta);
+            border-radius: 14px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(249, 115, 22, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-plan:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-plan .arrow {
+            width: 34px;
+            height: 34px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-plan .arrow svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        /* ATIVAR ACESSO */
+        .activate {
+            padding: 3rem 1.5rem;
+        }
+
+        .activate-card {
+            max-width: 500px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15), rgba(249, 115, 22, 0.15));
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .activate-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activate-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--purple);
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .activate-content h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .activate-content p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+        }
+
+        .btn-activate {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-activate:hover {
+            background: #1a1a2e;
+        }
+
+        /* WHATSAPP */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, #ec4899, #ef4444);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+            cursor: pointer;
+            z-index: 999;
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+
+        .whatsapp-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .whatsapp-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: #fff;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.9rem; }
+            .plan-price .amount { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M2 12h4l3-9 6 18 3-9h4"/></svg>
+        ViralPost gera Carrosséis Virais completos para o Instagram: imagem, copy e layout em menos de 3 minutos!
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <span class="logo-text">ViralPost</span>
+        </div>
+        <div class="menu-btn">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>Gere <span class="grad-text">carrosséis virais</span> em minutos e <span class="purple-text">viralize</span> de forma automática!</h1>
+        <p class="hero-desc">A IA faz tudo: texto persuasivo, design profissional e posts prontos para publicar. <strong>Sem Canva. Sem designer. Sem perder horas.</strong></p>
+        <div class="cta-wrapper">
+            <a href="#planos" class="btn-cta">
+                <span>Quero Criar<br>Carrosséis Virais</span>
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
+            </a>
+        </div>
+        <p class="btn-sub">Sem fidelidade · cancele quando quiser</p>
+    </section>
+
+    <!-- VIDEO -->
+    <section class="video-section">
+        <div class="video-player">
+            <div class="play-btn"></div>
+        </div>
+        <p class="video-label">Demonstração completa · fluxo real</p>
+    </section>
+
+    <!-- SOCIAL PROOF -->
+    <section class="social-proof">
+        <h2>Usado por creators, agências e equipes de conteúdo</h2>
+        <div class="avatars">
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=1" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=5" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=8" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=12" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=16" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=20" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=32" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+            <div class="avatar"><div class="avatar-inner"><img src="https://i.pravatar.cc/100?img=25" alt="Usuário" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div></div>
+        </div>
+    </section>
+
+    <!-- BENEFÍCIOS -->
+    <section class="benefits">
+        <div class="benefits-card">
+            <ul class="benefits-list">
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Carrosséis ilimitados</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Fator Viral em Imagens com IA</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>IA para Textos e Copys Persuasivas</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Editor Premium Drag &amp; Drop</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Comunidade para Creators</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Aulas e Tutoriais na Plataforma</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Calendário de Conteúdo</li>
+                <li><span class="check-icon"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>Organização de Posts</li>
+            </ul>
+            <div class="benefits-cta">
+                <a href="#planos" class="btn-cta">
+                    <span>Assinar Plano<br>Anual</span>
+                    <span class="arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLANOS -->
+    <section class="plans" id="planos">
+        <div class="plans-label"><span class="dot"></span> PLANOS E PREÇOS</div>
+        <h2>Escolha a melhor opção<br><span class="grad-text">para começar</span></h2>
+        <p class="subtitle">Checkout seguro (SSL). Sem fidelidade. Cancele quando quiser.</p>
+
+        <div class="toggle-wrapper">
+            <div class="toggle-option active">Anual · 75% OFF</div>
+            <div class="toggle-option">Mensal</div>
+        </div>
+
+        <div class="plan-card">
+            <div class="plan-tag">Mais escolhido · Melhor custo-benefício</div>
+            <p class="plan-name">Plano Anual</p>
+            <div class="plan-price">
+                <span class="amount">R$297</span>
+                <span class="period">,90/ano</span>
+            </div>
+            <p class="plan-old-price">R$1.174,80/ano <span class="save-badge">Poupe 75%</span></p>
+            <p class="plan-note">Equivale a ~R$24,82/mês no ano</p>
+            <a href="#" class="btn-plan">
+                <span>Assinar Plano Anual</span>
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ATIVAR ACESSO -->
+    <section class="activate">
+        <div class="activate-card">
+            <div class="activate-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="activate-content">
+                <h3>Comprou e não ativou seu acesso ainda?</h3>
+                <p>Use o <strong>código do pedido</strong> que vem no comprovante da sua compra na InfinityPay — não é e-mail, é o código do pedido na compra.</p>
+                <a href="#" class="btn-activate">Ativar acesso agora &gt;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHATSAPP FLUTUANTE -->
+    <a href="https://wa.me/" class="whatsapp-btn" aria-label="Suporte via WhatsApp">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+</body>
+</html>

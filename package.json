@@ -1,0 +1,14 @@
+{
+  "name": "viralpost",
+  "version": "1.0.0",
+  "description": "ViralPost - Gerador de Carrosséis Virais com IA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "dotenv": "16.4.7"
+  }
+}
