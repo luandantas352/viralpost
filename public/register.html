@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViralPost — Criar Conta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0B0B0F;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .auth-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .auth-card .logo {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .auth-card .logo svg { width: 24px; height: 24px; fill: #fff; }
+        .auth-card h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .auth-card .subtitle { font-size: 0.9rem; color: #94a3b8; margin-bottom: 2rem; }
+        .field { margin-bottom: 1rem; text-align: left; }
+        .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.4rem; }
+        .field input {
+            width: 100%; padding: 0.8rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; color: #f1f5f9;
+            font-size: 0.9rem; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        .field input:focus { border-color: #8b5cf6; }
+        .btn-auth {
+            display: block; width: 100%; padding: 0.9rem; margin-top: 1.5rem;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #fff; font-size: 0.95rem; font-weight: 700;
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 8px 30px rgba(139,92,246,0.25);
+            transition: transform 0.2s;
+        }
+        .btn-auth:hover { transform: translateY(-2px); }
+        .auth-link { margin-top: 1.5rem; font-size: 0.85rem; color: #94a3b8; }
+        .auth-link a { color: #8b5cf6; text-decoration: none; }
+        .success-icon { font-size: 3rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <div class="success-icon">&#x2705;</div>
+        <h1>Pagamento Confirmado!</h1>
+        <p class="subtitle">Crie sua conta para acessar o ViralPost.</p>
+        <form onsubmit="createAccount(event)">
+            <div class="field">
+                <label>E-mail</label>
+                <input type="email" id="regEmail" required>
+            </div>
+            <div class="field">
+                <label>Criar senha</label>
+                <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" minlength="6" required>
+            </div>
+            <div class="field">
+                <label>Confirmar senha</label>
+                <input type="password" id="regConfirm" placeholder="Repita a senha" required>
+            </div>
+            <button type="submit" class="btn-auth">Criar Conta e Acessar</button>
+        </form>
+        <p class="auth-link">Já tem conta? <a href="/login.html">Fazer login</a></p>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('email');
+        if (email) document.getElementById('regEmail').value = email;
+
+        function createAccount(e) {
+            e.preventDefault();
+            const pass = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+            if (pass !== confirm) {
+                alert('As senhas não coincidem.');
+                return;
+            }
+            const btn = document.querySelector('.btn-auth');
+            btn.textContent = 'Criando conta...';
+            btn.disabled = true;
+            setTimeout(() => {
+                localStorage.setItem('viralpost_user', JSON.stringify({
+                    email: document.getElementById('regEmail').value,
+                    plan: 'active'
+                }));
+                window.location.href = '/gerador.html';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
